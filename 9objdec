@@ -1,0 +1,34 @@
+#9-objdec
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+net = cv2.dnn.readNet("dataset/yolov3.cfg", "dataset/yolov3.weights")
+classes = []
+with open("dataset/coco.names", "r") as f:
+    classes = [line.strip() for line in f.readlines()]
+
+img = cv2.imread("PANDA.jpg")
+img = cv2.resize(img, (416, 416))
+
+blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+net.setInput(blob)
+outs = net.forward(net.getUnconnectedOutLayersNames())
+
+for out in outs:
+    for detection in out:
+        scores = detection[5:]
+        class_id = np.argmax(scores)
+        confidence = scores[class_id]
+        if confidence > 0.5:
+            center_x, center_y, w, h = map(int, detection[:4] * np.array([img.shape[1], img.shape[0], img.shape[1], img.shape[0]]))
+            x, y = center_x - w // 2, center_y - h // 2
+            label = classes[class_id]
+            color = (0, 255, 0)
+            cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
+            cv2.putText(img, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+plt.figure(figsize=(10, 8))
+plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+plt.axis('off')
+plt.show()
