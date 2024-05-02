@@ -1,7 +1,8 @@
-#6-Gan
+#6-GAN
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
+import matplotlib.pyplot as plt
 
 latent_dim = 100
 height, width, channels = 28, 28, 1
@@ -40,19 +41,24 @@ def generate_real_shapes(n_samples):
     y_square = np.zeros((n_samples, 1))
     return np.concatenate((X_circle, X_square)), np.concatenate((y_circle, y_square))
 
-def train_gan(gan, epochs=100, batch_size=32):
+def train_gan(epochs=100, batch_size=32):
+    d_losses, g_losses = [], []
     for epoch in range(epochs):
         noise = np.random.normal(0, 1, (batch_size, latent_dim))
         generated_shapes = generator.predict(noise)
         real_shapes, labels = generate_real_shapes(batch_size)
 
-        x_combined = np.concatenate([real_shapes, generated_shapes])
-        y_combined = np.concatenate([labels, np.zeros((batch_size, 1))])
+        x_combined, y_combined = np.concatenate([real_shapes, generated_shapes]), np.concatenate([labels, np.zeros((batch_size, 1))])
 
-        d_loss = discriminator.train_on_batch(x_combined, y_combined)
-        y_mislabeled = np.ones((batch_size, 1))
-        g_loss = gan.train_on_batch(np.random.normal(0, 1, (batch_size, latent_dim)), y_mislabeled)
+        d_losses.append(discriminator.train_on_batch(x_combined, y_combined))
+        g_losses.append(gan.train_on_batch(np.random.normal(0, 1, (batch_size, latent_dim)), np.ones((batch_size, 1))))
 
-        print(f'Epoch: {epoch+1}, D Loss: {d_loss}, G Loss: {g_loss}')
+        print(f'Epoch: {epoch+1}, D Loss: {d_losses[-1]}, G Loss: {g_losses[-1]}')
 
-train_gan(gan, epochs=100, batch_size=32)
+    plt.plot(range(1, epochs + 1), d_losses, label='Discriminator Loss')
+    plt.plot(range(1, epochs + 1), g_losses, label='Generator Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
+train_gan(epochs=100, batch_size=32)
