@@ -26,7 +26,7 @@ history = model.fit(x_train, y_train, epochs=10, batch_size=128, validation_data
 test_loss, test_acc = model.evaluate(x_test, y_test)
 print("Test accuracy:", test_acc)
 
-next_sample_label = y_test[1]
+next_sample_img,next_sample_label = x_test[1], y_test[1]
 next_sample_img = np.expand_dims(next_sample_img, 0)
 next_pred = model.predict(next_sample_img)
 next_pred_label = np.argmax(next_pred)
