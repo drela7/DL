@@ -1,0 +1,67 @@
+#7-Rnn
+def minimax(board, depth, maximizing):
+    if check_win(board, 'AI'):
+        return 10 - depth
+    elif check_win(board, 'Player'):
+        return depth - 10
+    elif 0 not in board:
+        return 0
+
+    best_score = -float('inf') if maximizing else float('inf')
+    for i in range(9):
+        if board[i] == 0:
+            board[i] = -1 if maximizing else 1
+            score = minimax(board, depth + 1, not maximizing)
+            board[i] = 0
+            best_score = max(score, best_score) if maximizing else min(score, best_score)
+    return best_score
+
+def find_best_move(board):
+    best_score, best_move = -float('inf'), -1
+    for i in range(9):
+        if board[i] == 0:
+            board[i] = -1
+            score = minimax(board, 0, False)
+            board[i] = 0
+            if score > best_score:
+                best_score, best_move = score, i
+    return best_move
+
+def play_game():
+    board, player_turn = [0] * 9, True
+
+    while True:
+        print_board(board)
+        move = int(input("Your move (0-8): ")) if player_turn else find_best_move(board)
+        if board[move] != 0:
+            print("Illegal move! Try again.")
+            continue
+        board[move] = 1 if player_turn else -1
+
+        if check_win(board, 'Player'):
+            print_board(board)
+            print("Player wins!")
+            break
+        elif check_win(board, 'AI'):
+            print_board(board)
+            print("AI wins!")
+            break
+        elif 0 not in board:
+            print_board(board)
+            print("It's a draw!")
+            break
+
+        player_turn = not player_turn
+
+def check_win(board, player):
+    winning_combinations = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+    marker = 1 if player == 'Player' else -1
+    return any(all(board[c] == marker for c in combo) for combo in winning_combinations)
+
+def print_board(board):
+    chars = [' ', 'X', 'O']
+    for i in range(3):
+        print('|'.join(chars[board[i * 3 + j]] for j in range(3)))
+        if i < 2: print("-----")
+
+play_game()
