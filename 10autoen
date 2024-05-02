@@ -1,0 +1,32 @@
+#10-autoen
+import matplotlib.pyplot as plt
+
+(x_train, _), (x_test, _) = tf.keras.datasets.mnist.load_data()
+x_train, x_test = x_train.reshape((-1, 784)) / 255., x_test.reshape((-1, 784)) / 255.
+
+encoding_dim = 32
+autoencoder = tf.keras.models.Sequential([
+    tf.keras.layers.Dense(encoding_dim, activation='relu', input_shape=(784,)),
+    tf.keras.layers.Dense(784, activation='sigmoid')
+])
+autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
+
+history = autoencoder.fit(x_train, x_train, epochs=10, batch_size=256, shuffle=True, validation_data=(x_test, x_test))
+
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Training and Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+reconstructed_images = autoencoder.predict(x_test[:10])
+fig, axes = plt.subplots(2, 10, figsize=(20, 4))
+for ax, img, recon_img in zip(axes[0], x_test[:10], reconstructed_images):
+    ax.imshow(img.reshape(28, 28), cmap='gray')
+    ax.axis('off')
+for ax, recon_img in zip(axes[1], reconstructed_images):
+    ax.imshow(recon_img.reshape(28, 28), cmap='gray')
+    ax.axis('off')
+plt.show()
