@@ -1,0 +1,28 @@
+#8-LSTM
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+data = np.arange(100).reshape((10, 10, 1))
+
+model = tf.keras.Sequential([
+    tf.keras.layers.LSTM(units=50, return_sequences=True, input_shape=(10, 1)),
+    tf.keras.layers.LSTM(units=50),
+    tf.keras.layers.Dense(units=1)
+])
+
+model.compile(optimizer='adam', loss='mse')
+model.fit(data, data[:, -1, :], epochs=100, verbose=1)
+
+predictions = model.predict(data)
+print("Predictions:")
+print(predictions)
+
+plt.figure(figsize=(6, 4))
+plt.plot(data[:, -1, :], label='Actual')
+plt.plot(predictions, label='Predicted')
+plt.xlabel('Sample Index')
+plt.ylabel('Value')
+plt.title('Actual vs Predicted')
+plt.legend()
+plt.show()
